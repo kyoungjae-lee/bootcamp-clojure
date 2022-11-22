@@ -59,7 +59,7 @@ multiply
    '(nil nil [2 "Hi"] [3 "Hi"]))                            ;;=>true
 
 (map-indexed vector ["a" "h" "c"])
-
+(use 'clojure.data)
 ;(def set-a ["a" "b" "c" "d"])
 ;(def set-b ["a" "h" "c" "d"])
 (def set-a "fghij")
@@ -67,55 +67,30 @@ multiply
 (diff set-a set-b)
 
 (def input-string (->> "resources/aoc2018-2_2.sample.txt"
-                                (slurp)
-                                (clojure.string/split-lines)))
+                       (slurp)
+                       (clojure.string/split-lines)))
 
 input-string
-(def combine-strings (for [str-list1 input-string]
-                       (for [str-list2 input-string]
-                         [str-list1 str-list2])))
+(def combine-strings (for [str-list1 input-string
+                           str-list2 input-string]
+                       [str-list1 str-list2]))
 
-combine-strings
+;combine-strings
+(defn remove-keep-nil [target]
+  (keep #(if-not (nil? %) %) target))
 
+(defn compare-two-strings [strings]
+  (for [string-vector strings]
+    (let [source (first string-vector)
+          target (second string-vector)]
+        (let [has-nil-one-map (frequencies (last (diff (char-array source) (char-array target))))]
+          (if (= (get has-nil-one-map 'nil) 1)
+            (remove-keep-nil (keys has-nil-one-map)))))))
 
+;(def key-set (keys {\f 1, \g 1, nil 1, \i 1, \j 1}))        ; (\f \g nil \i \j)
+;(keep #(if-not (nil? %) %) key-set)                         ;(\f \g \i \j)
 
-(two-sum [2 7 11 15] 9)
-;(defn find-pattern [source]
-;  (reduce
-;    (fn [{prev    :prev
-;          results :results} input]
-;      (if (results input)
-;        (reduced input)
-;        (do
-;          (prn "result : " results)
-;          (prn "prv" prev "input" input)
-;          (prn "result last" (last (diff prev input)))
-;          (def compare-val (last (diff prev input)))
-;          {:prev    input
-;           :results (conj results compare-val)}))
-;      )
-;
-;    source))
-;
-;(defn make-diff-set [str-list]
-;  (reduce
-;    (fn [results input]
-;      (last (diff (first results) input))) #{} str-list))
-;
-;(def another-one-character (->> "resources/aoc2018-2_2.sample.txt"
-;                                (slurp)
-;                                (clojure.string/split-lines)  ;["abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz"]
-;                                #_(map (fn [str-list]
-;                                       (loop [str str-list]
-;                                         (seq (char-array str))))) ;((\a \b \c \d \e) (\f \g \h \i \j) (\k \l \m \n \o) (\p \q \r \s \t) (\f \g \u \i \j) (\a \x \c \y \e) (\w \v \x \y \z))
-;                                ;(reductions (conj #{}))
-;                                ;(find-pattern)
-;                                ;(map-indexed vector)
-;                                ))
-;
-;another-one-character
-
-
+(apply str (first (remove-keep-nil (compare-two-strings combine-strings))))
 
 ;; #################################
 ;; ###        Refactoring        ###
