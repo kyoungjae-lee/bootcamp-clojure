@@ -68,25 +68,49 @@ multiply
 
 (def input-string (->> "resources/aoc2018-2_2.sample.txt"
                        (slurp)
-                       (clojure.string/split-lines)))
+                       (clojure.string/split-lines)
+                       ))
 
 input-string
 (def combine-strings (for [str-list1 input-string
-                           str-list2 input-string]
+                           str-list2 input-string
+                           :when (not= str-list1 str-list2)]
                        [str-list1 str-list2]))
 
-;combine-strings
+combine-strings
+
 (defn remove-keep-nil [target]
   (keep #(if-not (nil? %) %) target))
 
 (defn compare-two-strings [strings]
   (for [string-vector strings]
-    (let [source (first string-vector)
-          target (second string-vector)]
-        (let [has-nil-one-map (frequencies (last (diff (char-array source) (char-array target))))]
-          (if (= (get has-nil-one-map 'nil) 1)
-            (remove-keep-nil (keys has-nil-one-map)))))))
+    (let [[source target] string-vector
+          has-nil-one-map (frequencies
+                            (last (diff (char-array source) (char-array target))))]
+        (if (= (get has-nil-one-map 'nil) 1)
+          ;(remove-keep-nil (keys has-nil-one-map))
+          (keys has-nil-one-map)
+          ))))
 
+(defn compare-two-strings2 [sting-vector]
+  (for [[s1 s2] sting-vector]
+    (->> (map vector s1 s2)
+         (keep (fn [[c1 c2]] (when (= c1 c2) c1)))
+         (apply str))
+    )
+  )
+
+(comment
+  (->> combine-strings
+       (compare-two-strings2)
+       (filter #(not= "" %))
+       (filter #(= (- (count (first (first combine-strings))) 1) (count %)))
+       (first)
+       ))
+
+;; (str \a nil \b) => ab
+;;
+;(str \f \g nil \i \j)
 ;(def key-set (keys {\f 1, \g 1, nil 1, \i 1, \j 1}))        ; (\f \g nil \i \j)
 ;(keep #(if-not (nil? %) %) key-set)                         ;(\f \g \i \j)
 
