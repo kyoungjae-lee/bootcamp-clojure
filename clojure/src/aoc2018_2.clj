@@ -71,6 +71,7 @@ multiply
                        (clojure.string/split-lines)
                        ))
 
+;; for -> when
 input-string
 (def combine-strings (for [str-list1 input-string
                            str-list2 input-string
@@ -82,6 +83,8 @@ combine-strings
 (defn remove-keep-nil [target]
   (keep #(if-not (nil? %) %) target))
 
+;; abcde fghij
+;; => [[a f] [b g] [c h] [d i] [e j]
 (defn compare-two-strings [strings]
   (for [string-vector strings]
     (let [[source target] string-vector
@@ -113,8 +116,9 @@ combine-strings
 ;(str \f \g nil \i \j)
 ;(def key-set (keys {\f 1, \g 1, nil 1, \i 1, \j 1}))        ; (\f \g nil \i \j)
 ;(keep #(if-not (nil? %) %) key-set)                         ;(\f \g \i \j)
+;(comment (apply str (first (remove-keep-nil (compare-two-strings combine-strings)))))
 
-(apply str (first (remove-keep-nil (compare-two-strings combine-strings))))
+;(apply str (first (remove-keep-nil (compare-two-strings combine-strings))))
 
 ;; #################################
 ;; ###        Refactoring        ###

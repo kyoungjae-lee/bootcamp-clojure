@@ -64,24 +64,19 @@
        (apply (fn [_ id x y w h] (zipmap [:id :x :y :w :h] [id x y w h])))
        ))
 
-(defn make-range [x y w h]
-  (for [x-range (range x (+ x w))
-        y-range (range y (+ y h))]
-    [x-range y-range])
+(defn make-range [input-map]
+  (let [{:keys [x y w h]} input-map]
+    (for [x-range (range x (+ x w))
+          y-range (range y (+ y h))]
+      [x-range y-range]))
   )
-(defn make-range-each [input-map]
-  (for [{:keys [x y w h]} input-map]
-    (vec (make-range x y w h)))
-  )
-
 
 
 (comment (->> "resources/aoc2018-3_1.sample.txt"
               (slurp)
               (clojure.string/split-lines)
               (map mapping-position)
-              (make-range-each)
-              (apply concat)
+              (mapcat make-range)
               (frequencies)
               (vals)
               (filter #(> % 1))
@@ -101,49 +96,65 @@
 
 
 
-(def get-coordinate (->> "resources/aoc2018-3_1.sample.txt"
-                         (slurp)
-                         (clojure.string/split-lines)
-                         (map mapping-position)))
 
-(defn append-range [map]
-  (for [id-map map]
-    (let [{:keys [x y w h]} id-map]
-      (assoc id-map :range (set (make-range x y w h))))
-    ))
 
-(defn find-intersection [input-map source-id source-range-set]
-  (for [target input-map
-        :let [target-id (get target :id)
-              target-range-set (get target :range)
-              intersection-count (count (clojure.set/intersection source-range-set target-range-set))]
-        :when (not= source-id target-id)]
-    intersection-count))
 
-(defn index-by-intersection-list [input-map]
-  (for [source input-map
-        :let [source-id (get source :id)
-              source-range-set (get source :range)]]
-    [source-id (find-intersection input-map source-id source-range-set)]
-    )
-  )
+;(defn find-intersection [input-map source-id source-range-set]
+;  (for [target input-map
+;        :let [target-id (get target :id)
+;              target-range-set (get target :range)
+;              intersection-count (count (clojure.set/intersection source-range-set target-range-set))]
+;        :when (not= source-id target-id)]
+;    intersection-count))
+;
+;(defn index-by-intersection-list [input-map]
+;  (for [source input-map
+;        :let [source-id (get source :id)
+;              source-range-set (get source :range)]]
+;    [source-id (find-intersection input-map source-id source-range-set)]
+;    )
+;  )
 
 
 ;(= ((0 0) (0 4) (4 0)) )
 ;(count (clojure.set/intersection #{[6 6] [6 5] [5 6] [5 5]} #{[4 3] [3 3] [5 4] [6 3] [3 4] [4 2] [5 3] [4 1] [5 2] [6 4] [5 1] [6 1] [3 1] [4 4] [6 2] [3 2]}))
 ;(doseq [[k v] {1 (4 0) 2 (4 0) 3 (0 0)}]
 ;  (prn k (reduce + v)))
-(defn intersection-sum [map]
-  (for [idx (keys map)]
-    (if (= (reduce + (get map idx)) 0)
-      idx)
-    ))
-(comment (->> get-coordinate
-              (vec)
-              (append-range)
-              (index-by-intersection-list)
-              (into {})
-              (intersection-sum)
-              (filter #(not= nil %))
+;(defn intersection-sum [map]
+;  (for [idx (keys map)]
+;    (if (= (reduce + (get map idx)) 0)
+;      idx)
+;    ))
+(defn append-range [m]
+  (assoc m :range (set (make-range m))))
+
+(defn filtering-duplicated [m]
+  (let [[key value] m]
+    (when (> value 1) key))
+  )
+
+(defn find-not-intersection [{:keys [id range]}]
+  (when (= (count (clojure.set/intersection range freq-set)) 0)
+    id)
+  )
+
+(def freq-set (->> "resources/aoc2018-3_1.sample.txt"
+                   (slurp)
+                   (clojure.string/split-lines)
+                   (map mapping-position)
+                   (mapcat make-range)
+                   (frequencies)
+                   (keep filtering-duplicated)
+                   (into #{})
+                   ))
+freq-set
+
+(comment (->> "resources/aoc2018-3_1.sample.txt"
+              (slurp)
+              (clojure.string/split-lines)
+              (map mapping-position)
+              (map append-range)
+              (keep find-not-intersection)
+              ;(apply str)
               )
          )
